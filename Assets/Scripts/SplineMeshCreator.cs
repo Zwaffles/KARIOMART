@@ -35,7 +35,7 @@ public class SplineMeshCreator : MonoBehaviour
     /// </summary>
     public event Action OnValueChanged;
     
-    private void SampleSplineWidth(float time, out Vector3 p1, out Vector3 p2)
+    private void CalculateSplineWidth(float time, out Vector3 p1, out Vector3 p2)
     {
         splineContainer.Evaluate(_splineIndex, time, out _position, out _forward, out _upVector);
 
@@ -53,7 +53,7 @@ public class SplineMeshCreator : MonoBehaviour
         for (var i = 0; i < resolution; i++)
         {
             var time = step * i;
-            SampleSplineWidth(time, out var p1, out var p2);
+            CalculateSplineWidth(time, out var p1, out var p2);
             _vertsP1.Add(p1);
             _vertsP2.Add(p2);
         }
