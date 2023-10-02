@@ -20,8 +20,6 @@ public class SplineMeshCreator : MonoBehaviour
     public bool AutoUpdate => autoUpdate;
 
     private int _splineIndex;
-
-    private bool _subscribedToEvent;
     
     private float3 _forward;
     private float3 _position;
@@ -118,5 +116,5 @@ public class SplineMeshCreator : MonoBehaviour
     {
         OnValueChanged?.Invoke();
     }
-}
 #endif
+}

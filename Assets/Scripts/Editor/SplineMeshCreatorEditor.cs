@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Splines;
 using UnityEngine;
@@ -49,4 +48,3 @@ namespace Editor
         }
     }
 }
-#endif
