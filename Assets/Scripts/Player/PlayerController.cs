@@ -17,16 +17,30 @@ public class PlayerController : MonoBehaviour
     private PlayerState currentState = PlayerState.Idle;
 
     private float rotY = 0.0f;
+    private float steer = 0.0f;
 
-    private UnityEvent onAccelerate;
-    private UnityEvent onBrake;
+    private bool acceleratePressed;
+    private bool brakePressed;
+
+    private Rigidbody rb;
+
+    [SerializeField] private float steerSpeed = 30f;
+    [SerializeField] private float accelerationForce = 10f;
+    [SerializeField] private float brakingForce = 10f;
+    [SerializeField] private float maxSpeed = 10f;
+    [SerializeField] private float decelerationRate = 1f;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
 
     private void Update()
     {
         switch (currentState)
         {
             case PlayerState.Idle:
-                // Implement logic here eventually?
+                Idle();
                 break;
             case PlayerState.Accelerating:
                 Accelerate();
@@ -36,58 +50,91 @@ public class PlayerController : MonoBehaviour
                 break;
         }
 
-        CheckInput();
+        rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxSpeed);
+
+        if (steer != 0)
+            Steer();
     }
 
-    private void CheckInput()
+    private void UpdatePlayerState()
     {
-        //if (onAccelerate.GetPersistentEventCount() > 0)
-        //{
-        //    currentState = PlayerState.Accelerating;
-        //}
-        //else if (onBrake.GetPersistentEventCount() > 0)
-        //{
-        //    currentState = PlayerState.Braking;
-        //}
-        //else
-        //{
-        //    currentState = PlayerState.Idle;
-        //}
-
-        if (rotY == 0)
-            return;
-
-        Steer(rotY);
+        if (acceleratePressed && brakePressed)
+        {
+            currentState = PlayerState.Idle;
+        }
+        else if (acceleratePressed)
+        {
+            currentState = PlayerState.Accelerating;
+        }
+        else if (brakePressed)
+        {
+            currentState = PlayerState.Braking;
+        }
+        else
+        {
+            currentState = PlayerState.Idle;
+        }
     }
 
+    private void Idle()
+    {
+        Vector3 decelerationForce = -rb.velocity.normalized * decelerationRate;
+        rb.AddForce(decelerationForce, ForceMode.Acceleration);
+    }
 
     private void Accelerate()
     {
-        Debug.Log("luh acceleratshion");
+        if (rb.velocity.magnitude < maxSpeed)
+        {
+            rb.AddForce(transform.forward * accelerationForce, ForceMode.Acceleration);
+        }
     }
 
     private void Brake()
     {
-        Debug.Log("luh breking");
+        Vector3 reverseForce = -rb.velocity.normalized * brakingForce;
+        rb.AddForce(reverseForce, ForceMode.Acceleration);
     }
 
-    private void Steer(float steer)
+    private void Steer()
     {
+        if (currentState == PlayerState.Idle)
+            return;
+
+        rotY += steer * steerSpeed * Time.deltaTime;
         transform.rotation = Quaternion.Euler(0, rotY, 0);
     }
 
     public void OnAccelerate(InputAction.CallbackContext ctx)
     {
-        onAccelerate.Invoke();
+        if (ctx.started)
+        {
+            acceleratePressed = true;
+        }
+        else if (ctx.canceled)
+        {
+            acceleratePressed = false;
+        }
+
+        UpdatePlayerState();
     }
 
     public void OnSteer(InputAction.CallbackContext ctx)
     {
-        rotY += ctx.ReadValue<float>();
+        steer = ctx.ReadValue<float>();
     }
 
     public void OnBrake(InputAction.CallbackContext ctx)
     {
-        onBrake.Invoke();
+        if (ctx.started)
+        {
+            brakePressed = true;
+        }
+        else if (ctx.canceled)
+        {
+            brakePressed = false;
+        }
+
+        UpdatePlayerState();
     }
 }
