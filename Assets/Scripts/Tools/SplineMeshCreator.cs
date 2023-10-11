@@ -11,7 +11,13 @@ public class SplineMeshCreator : MonoBehaviour
 
     [SerializeField] private MeshFilter meshFilter;
 
+    [SerializeField] private Transform collidersContainer;
+
+    [SerializeField] private PhysicMaterial colliderPhysicMaterial;
+
     [SerializeField] private float width;
+    [SerializeField] private float colliderWidth = 1.0f;
+    [SerializeField] private float colliderHeight = 1.0f;
 
     [SerializeField] private int resolution;
 
@@ -104,6 +110,118 @@ public class SplineMeshCreator : MonoBehaviour
             mesh.triangles = tris.ToArray();
 
             meshFilter.sharedMesh = mesh;
+        }
+    }
+
+    public void GenerateEdgeColliders()
+    {
+        if (collidersContainer == null)
+        {
+            Debug.LogError("RoadColliders GameObject not found. Make sure it's assigned in the Inspector.");
+            return;
+        }
+
+        for (int i = collidersContainer.childCount; i > 0; --i)
+            DestroyImmediate(collidersContainer.GetChild(0).gameObject);
+
+        for (int i = 0; i < _vertsP1.Count - 1; i++)
+        {
+            Vector3 p1 = _vertsP1[i];
+            Vector3 p2 = _vertsP1[i + 1];
+
+            Vector3 colliderPosition = (p1 + p2) / 2f; // Midpoint between p1 and p2
+
+            // Create an empty GameObject as the parent of the collider
+            GameObject colliderParent = new GameObject("Collider_Inner_" + i);
+            colliderParent.transform.SetParent(collidersContainer);
+            colliderParent.transform.position = colliderPosition;
+
+            // Calculate the rotation to align with the edge (assuming Z is the forward direction)
+            Quaternion rotation = Quaternion.LookRotation(p2 - p1, Vector3.up);
+
+            // Set the rotation of the colliderParent
+            colliderParent.transform.rotation = rotation;
+
+            // Create and configure the BoxCollider
+            BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
+            collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
+            collider.center = new Vector3(-colliderWidth / 2f, 0, 0);
+        }
+
+        if (_vertsP1.Count > 1)
+        {
+            Vector3 lastP1 = _vertsP1[_vertsP1.Count - 1];
+            Vector3 firstP1 = _vertsP1[0];
+
+            Vector3 colliderPosition = (lastP1 + firstP1) / 2f; // Midpoint between lastP1 and firstP1
+
+            // Create an empty GameObject as the parent of the collider
+            GameObject colliderParent = new GameObject("Collider_Inner_Last");
+            colliderParent.transform.SetParent(collidersContainer);
+            colliderParent.transform.position = colliderPosition;
+
+            // Calculate the rotation to align with the edge (assuming Z is the forward direction)
+            Quaternion rotation = Quaternion.LookRotation(firstP1 - lastP1, Vector3.up);
+
+            // Set the rotation of the colliderParent
+            colliderParent.transform.rotation = rotation;
+
+            // Create and configure the BoxCollider
+            BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
+            collider.material = colliderPhysicMaterial;
+            collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP1, firstP1));
+            collider.center = new Vector3(-colliderWidth / 2f, 0, 0);
+        }
+
+        // Add colliders to the outer edge (VertsP2)
+        for (int i = 0; i < _vertsP2.Count - 1; i++)
+        {
+            Vector3 p1 = _vertsP2[i];
+            Vector3 p2 = _vertsP2[i + 1];
+
+            Vector3 colliderPosition = (p1 + p2) / 2f; // Midpoint between p1 and p2
+
+            // Create an empty GameObject as the parent of the collider
+            GameObject colliderParent = new GameObject("Collider_Outer_" + i);
+            colliderParent.transform.SetParent(collidersContainer);
+            colliderParent.transform.position = colliderPosition;
+
+            // Calculate the rotation to align with the edge (assuming Z is the forward direction)
+            Quaternion rotation = Quaternion.LookRotation(p2 - p1, Vector3.up);
+
+            // Set the rotation of the colliderParent
+            colliderParent.transform.rotation = rotation;
+
+            // Create and configure the BoxCollider
+            BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
+            collider.material = colliderPhysicMaterial;
+            collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
+            collider.center = new Vector3(colliderWidth / 2f, 0, 0);
+        }
+
+        if (_vertsP2.Count > 1)
+        {
+            Vector3 lastP2 = _vertsP2[_vertsP2.Count - 1];
+            Vector3 firstP2 = _vertsP2[0];
+
+            Vector3 colliderPosition = (lastP2 + firstP2) / 2f; // Midpoint between lastP1 and firstP1
+
+            // Create an empty GameObject as the parent of the collider
+            GameObject colliderParent = new GameObject("Collider_Inner_Last");
+            colliderParent.transform.SetParent(collidersContainer);
+            colliderParent.transform.position = colliderPosition;
+
+            // Calculate the rotation to align with the edge (assuming Z is the forward direction)
+            Quaternion rotation = Quaternion.LookRotation(firstP2 - lastP2, Vector3.up);
+
+            // Set the rotation of the colliderParent
+            colliderParent.transform.rotation = rotation;
+
+            // Create and configure the BoxCollider
+            BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
+            collider.material = colliderPhysicMaterial;
+            collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP2, firstP2));
+            collider.center = new Vector3(colliderWidth / 2f, 0, 0);
         }
     }
 #if UNITY_EDITOR

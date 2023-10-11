@@ -46,5 +46,16 @@ namespace Editor
             
             _splineMeshCreator.BuildMesh();
         }
+
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+
+            if (GUILayout.Button("Generate Edge Colliders"))
+            {
+                SplineMeshCreator splineMeshCreator = (SplineMeshCreator)target;
+                splineMeshCreator.GenerateEdgeColliders();
+            }
+        }
     }
 }
