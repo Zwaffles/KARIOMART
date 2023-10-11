@@ -5,20 +5,22 @@ public class Course : MonoBehaviour
 {
     [SerializeField] private List<Checkpoint> checkpoints = new List<Checkpoint>();
 
-    private int totalCheckpoints;
-    private int[] playerProgress;
-    private GameManager gameManager;
+    private int _totalCheckpoints;
+
+    private int[] _playerProgress;
+
+    private GameManager _gameManager;
 
     public Transform SpawnPoint;
 
     private void Start()
     {
-        gameManager = GameManager.Instance;
+        _gameManager = GameManager.Instance;
 
         checkpoints.AddRange(GetComponentsInChildren<Checkpoint>());
-        totalCheckpoints = checkpoints.Count;
+        _totalCheckpoints = checkpoints.Count;
 
-        playerProgress = new int[gameManager.PlayerInputManager.playerCount];
+        _playerProgress = new int[_gameManager.PlayerInputManager.playerCount];
 
         foreach (var checkpoint in checkpoints)
         {
@@ -28,16 +30,16 @@ public class Course : MonoBehaviour
 
     private void HandleCheckpointReached(int playerNumber, Checkpoint checkpoint)
     {
-        if (playerProgress[playerNumber] < totalCheckpoints)
+        if (_playerProgress[playerNumber] < _totalCheckpoints)
         {
-            if (checkpoint == checkpoints[playerProgress[playerNumber]])
+            if (checkpoint == checkpoints[_playerProgress[playerNumber]])
             {
-                playerProgress[playerNumber]++;
+                _playerProgress[playerNumber]++;
             }
 
-            if (playerProgress[playerNumber] == totalCheckpoints)
+            if (_playerProgress[playerNumber] == _totalCheckpoints)
             {
-                gameManager.PlayerWon(playerNumber);
+                _gameManager.PlayerWon(playerNumber);
             }
         }
     }

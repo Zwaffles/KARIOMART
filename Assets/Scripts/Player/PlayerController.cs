@@ -14,15 +14,15 @@ public class PlayerController : MonoBehaviour
         Reversing
     }
 
-    private PlayerState currentState = PlayerState.Idle;
+    private PlayerState _currentState = PlayerState.Idle;
 
-    private float steer = 0.0f;
-    private float forwardVelocity = 0.0f;
+    private float _steer = 0.0f;
+    private float _forwardVelocity = 0.0f;
 
-    private bool acceleratePressed;
-    private bool reversePressed;
+    private bool _acceleratePressed;
+    private bool _reversePressed;
 
-    private Rigidbody rb;
+    private Rigidbody _rb;
 
     [SerializeField] private float steerSpeed = 10f;
     [SerializeField] private float accelerationForce = 10f;
@@ -35,7 +35,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        _rb = GetComponent<Rigidbody>();
 
         GameManager.Instance.OnLoadNextCourse += ResetPlayer;
     }
@@ -47,12 +47,12 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        forwardVelocity = Vector3.Dot(rb.velocity, transform.forward);
+        _forwardVelocity = Vector3.Dot(_rb.velocity, transform.forward);
 
-        switch (currentState)
+        switch (_currentState)
         {
             case PlayerState.Idle:
-                if(forwardVelocity > 0)
+                if(_forwardVelocity > 0)
                     Idle();
                 else
                     Debug.Log("Car is idling");
@@ -67,81 +67,81 @@ public class PlayerController : MonoBehaviour
                 break;
         }
 
-        rb.velocity = Vector3.ClampMagnitude(rb.velocity, maxSpeed);
+        _rb.velocity = Vector3.ClampMagnitude(_rb.velocity, maxSpeed);
 
-        if (rb.velocity.magnitude < 0.1f)
-            rb.velocity = Vector3.zero;
+        if (_rb.velocity.magnitude < 0.1f)
+            _rb.velocity = Vector3.zero;
 
-        if (steer != 0)
+        if (_steer != 0)
             Steer();
     }
 
     private void UpdatePlayerState()
     {
-        if (acceleratePressed && reversePressed)
+        if (_acceleratePressed && _reversePressed)
         {
-            currentState = PlayerState.Idle;
+            _currentState = PlayerState.Idle;
         }
-        else if (acceleratePressed)
+        else if (_acceleratePressed)
         {
-            currentState = PlayerState.Accelerating;
+            _currentState = PlayerState.Accelerating;
         }
-        else if (reversePressed)
+        else if (_reversePressed)
         {
-            currentState = PlayerState.Reversing;
+            _currentState = PlayerState.Reversing;
         }
         else
         {
-            currentState = PlayerState.Idle;
+            _currentState = PlayerState.Idle;
         }
     }
 
     private void Idle()
     {
-        Vector3 decelerationForce = -rb.velocity.normalized * decelerationRate;
-        rb.AddForce(decelerationForce, ForceMode.Acceleration);
+        Vector3 decelerationForce = -_rb.velocity.normalized * decelerationRate;
+        _rb.AddForce(decelerationForce, ForceMode.Acceleration);
     }
 
     private void Accelerate()
     {
-        if (rb.velocity.magnitude < maxSpeed)
+        if (_rb.velocity.magnitude < maxSpeed)
         {
-            rb.AddForce(transform.forward * accelerationForce, ForceMode.Acceleration);
+            _rb.AddForce(transform.forward * accelerationForce, ForceMode.Acceleration);
         }
     }
 
     private void Reverse()
     {
-        if (forwardVelocity > 0)
+        if (_forwardVelocity > 0)
         {
-            rb.AddForce(-rb.velocity.normalized * brakeForce, ForceMode.Acceleration);
+            _rb.AddForce(-_rb.velocity.normalized * brakeForce, ForceMode.Acceleration);
         }
         else
         {
-            rb.AddForce(-transform.forward * reverseForce, ForceMode.Acceleration);
+            _rb.AddForce(-transform.forward * reverseForce, ForceMode.Acceleration);
         }
     }
 
     private void Steer()
     {
-        if (currentState == PlayerState.Idle)
+        if (_currentState == PlayerState.Idle)
             return;
 
-        float torque = (currentState == PlayerState.Reversing ? -steer : steer) * steerSpeed;
+        float torque = (_currentState == PlayerState.Reversing ? -_steer : _steer) * steerSpeed;
 
-        float currentAngularVelocity = rb.angularVelocity.y;
+        float currentAngularVelocity = _rb.angularVelocity.y;
 
         float newAngularVelocity = currentAngularVelocity + torque;
 
         if (Mathf.Abs(newAngularVelocity) <= maxAngularVelocity)
         {
-            rb.AddTorque(Vector3.up * torque, ForceMode.Acceleration);
+            _rb.AddTorque(Vector3.up * torque, ForceMode.Acceleration);
         }
         else
         {
             if (Mathf.Sign(torque) != Mathf.Sign(currentAngularVelocity))
             {
-                rb.AddTorque(Vector3.up * torque, ForceMode.Acceleration);
+                _rb.AddTorque(Vector3.up * torque, ForceMode.Acceleration);
             }
         }
     }
@@ -150,15 +150,15 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 bounceDirection = -collision.contacts[0].normal;
 
-        rb.velocity = Vector3.Reflect(rb.velocity, bounceDirection) * bounceFactor;
+        _rb.velocity = Vector3.Reflect(_rb.velocity, bounceDirection) * bounceFactor;
     }
 
     private void ResetPlayer(Transform spawnPoint)
     {
-        rb.velocity = Vector3.zero;
-        steer = 0.0f;
-        acceleratePressed = false;
-        reversePressed = false;
+        _rb.velocity = Vector3.zero;
+        _steer = 0.0f;
+        _acceleratePressed = false;
+        _reversePressed = false;
 
         transform.position = spawnPoint.position;
         transform.rotation = spawnPoint.rotation;
@@ -168,11 +168,11 @@ public class PlayerController : MonoBehaviour
     {
         if (ctx.started)
         {
-            acceleratePressed = true;
+            _acceleratePressed = true;
         }
         else if (ctx.canceled)
         {
-            acceleratePressed = false;
+            _acceleratePressed = false;
         }
 
         UpdatePlayerState();
@@ -180,18 +180,18 @@ public class PlayerController : MonoBehaviour
 
     public void OnSteer(InputAction.CallbackContext ctx)
     {
-        steer = ctx.ReadValue<float>();
+        _steer = ctx.ReadValue<float>();
     }
 
     public void OnReverse(InputAction.CallbackContext ctx)
     {
         if (ctx.started)
         {
-            reversePressed = true;
+            _reversePressed = true;
         }
         else if (ctx.canceled)
         {
-            reversePressed = false;
+            _reversePressed = false;
         }
 
         UpdatePlayerState();

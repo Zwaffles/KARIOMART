@@ -7,23 +7,23 @@ using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
-    private static GameManager instance;
+    private static GameManager _instance;
 
     public static GameManager Instance
     {
         get
         {
-            if (instance == null)
+            if (_instance == null)
             {
-                instance = FindObjectOfType<GameManager>();
+                _instance = FindObjectOfType<GameManager>();
             }
-            return instance;
+            return _instance;
         }
     }
 
-    private Dictionary<int, int> playerProgress = new Dictionary<int, int>();
+    private Dictionary<int, int> _playerProgress = new Dictionary<int, int>();
 
-    private int currentCourseIndex = 0;
+    private int _currentCourseIndex = 0;
 
     [SerializeField] private PlayerInputManager playerInputManager;
 
@@ -39,9 +39,9 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null)
+        if (_instance == null)
         {
-            instance = this;
+            _instance = this;
         }
         else
         {
@@ -51,24 +51,24 @@ public class GameManager : MonoBehaviour
 
     public int GetPlayerProgress(int playerNumber)
     {
-        if (playerProgress.ContainsKey(playerNumber))
+        if (_playerProgress.ContainsKey(playerNumber))
         {
-            return playerProgress[playerNumber];
+            return _playerProgress[playerNumber];
         }
         return -1;
     }
 
     public void SetPlayerProgress(int playerNumber, int progress)
     {
-        if (playerProgress.ContainsKey(playerNumber))
+        if (_playerProgress.ContainsKey(playerNumber))
         {
-            playerProgress[playerNumber] = progress;
+            _playerProgress[playerNumber] = progress;
         }
     }
 
     public void PlayerWon(int playerNumber)
     {
-        playerProgress.Clear();
+        _playerProgress.Clear();
 
         DisplayVictoryMessage(playerNumber);
     }
@@ -97,18 +97,18 @@ public class GameManager : MonoBehaviour
 
     private void LoadNextCourse()
     {
-        currentCourseIndex++;
+        _currentCourseIndex++;
 
-        if (currentCourseIndex < courses.Length)
+        if (_currentCourseIndex < courses.Length)
         {
-            if (currentCourseIndex > 0)
+            if (_currentCourseIndex > 0)
             {
-                courses[currentCourseIndex - 1].gameObject.SetActive(false);
+                courses[_currentCourseIndex - 1].gameObject.SetActive(false);
             }
 
-            courses[currentCourseIndex].gameObject.SetActive(true);
+            courses[_currentCourseIndex].gameObject.SetActive(true);
 
-            OnLoadNextCourse(courses[currentCourseIndex].SpawnPoint);
+            OnLoadNextCourse(courses[_currentCourseIndex].SpawnPoint);
         }
     }
 }
