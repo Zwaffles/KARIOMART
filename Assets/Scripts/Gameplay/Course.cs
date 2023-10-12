@@ -17,7 +17,6 @@ public class Course : MonoBehaviour
     {
         _gameManager = GameManager.Instance;
 
-        checkpoints.AddRange(GetComponentsInChildren<Checkpoint>());
         _totalCheckpoints = checkpoints.Count;
 
         _playerProgress = new int[_gameManager.PlayerInputManager.playerCount];
@@ -34,11 +33,13 @@ public class Course : MonoBehaviour
         {
             if (checkpoint == checkpoints[_playerProgress[playerNumber]])
             {
+                Debug.Log(playerNumber + " entered checkpoint!");
                 _playerProgress[playerNumber]++;
             }
 
             if (_playerProgress[playerNumber] == _totalCheckpoints)
             {
+                Debug.Log(playerNumber + " won! calling " +_gameManager.name);
                 _gameManager.PlayerWon(playerNumber);
             }
         }

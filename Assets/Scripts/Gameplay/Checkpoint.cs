@@ -15,8 +15,6 @@ public class Checkpoint : MonoBehaviour
             int playerProgress = GameManager.Instance.GetPlayerProgress(playerNumber);
 
             OnCheckpointReached?.Invoke(playerNumber, this);
-
-            Debug.Log(playerNumber + " entered checkpoint!");
         }
     }
 }

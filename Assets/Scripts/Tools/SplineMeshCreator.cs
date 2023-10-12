@@ -38,7 +38,12 @@ public class SplineMeshCreator : MonoBehaviour
     /// Invoked once the component is loaded or a value has been changed in the inspector
     /// </summary>
     public event Action OnValueChanged;
-    
+
+    private void Start()
+    {
+        BuildMesh();
+    }
+
     private void CalculateSplineWidth(float time, out Vector3 p1, out Vector3 p2)
     {
         splineContainer.Evaluate(_splineIndex, time, out _position, out _forward, out _upVector);
@@ -140,6 +145,7 @@ public class SplineMeshCreator : MonoBehaviour
             colliderParent.transform.rotation = rotation;
 
             BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
+            collider.sharedMaterial = colliderPhysicMaterial;
             collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
             collider.center = new Vector3(-colliderWidth / 2f, 0, 0);
         }
@@ -160,7 +166,7 @@ public class SplineMeshCreator : MonoBehaviour
             colliderParent.transform.rotation = rotation;
 
             BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
-            collider.material = colliderPhysicMaterial;
+            collider.sharedMaterial = colliderPhysicMaterial;
             collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP1, firstP1));
             collider.center = new Vector3(-colliderWidth / 2f, 0, 0);
         }
@@ -181,7 +187,7 @@ public class SplineMeshCreator : MonoBehaviour
             colliderParent.transform.rotation = rotation;
 
             BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
-            collider.material = colliderPhysicMaterial;
+            collider.sharedMaterial = colliderPhysicMaterial;
             collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
             collider.center = new Vector3(colliderWidth / 2f, 0, 0);
         }
@@ -202,7 +208,7 @@ public class SplineMeshCreator : MonoBehaviour
             colliderParent.transform.rotation = rotation;
 
             BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
-            collider.material = colliderPhysicMaterial;
+            collider.sharedMaterial = colliderPhysicMaterial;
             collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP2, firstP2));
             collider.center = new Vector3(colliderWidth / 2f, 0, 0);
         }

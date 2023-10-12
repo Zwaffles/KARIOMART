@@ -343,7 +343,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 07f44fe3e9c462146a7769b976c50ec4, type: 2}
+  - {fileID: 2100000, guid: d2344366b80fe3d4f886ec412e0174fa, type: 2}
   - {fileID: 2100000, guid: ab035d7682921704a9015ac353311d57, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -725,8 +725,8 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: d5c075b9-409d-4a86-ae39-564660843c6e
     m_ActionName: Racing/Brake[/Keyboard/s]
-  m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
+  m_NeverAutoSwitchControlSchemes: 1
+  m_DefaultControlScheme: Player1
   m_DefaultActionMap: Racing
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
@@ -742,11 +742,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bef28905272d894c86d7fdfaef22156, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steerSpeed: 7.6
-  accelerationForce: 6.95
-  brakeForce: 13.53
-  maxSpeed: 20.28
-  decelerationRate: 1.56
-  reverseForce: 4.9
-  maxAngularVelocity: 10.4
-  bounceFactor: 0.5
+  steerSpeed: 9.9
+  accelerationForce: 13.59
+  brakeForce: 23
+  maxSpeed: 24.8
+  decelerationRate: 17.86
+  reverseForce: 8.67
+  maxAngularVelocity: 19.3
+  bounceFactor: 1.84

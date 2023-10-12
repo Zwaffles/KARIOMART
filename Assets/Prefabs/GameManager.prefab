@@ -283,7 +283,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerInputManager: {fileID: 75258077990551557}
-  victoryCanvas: {fileID: 6785399125299487332}
+  courses:
+  - {fileID: 503292922675805444, guid: 74a5efe7c14e27947be36bf107ec9c04, type: 3}
+  - {fileID: 432540908502286292, guid: a1ec77a1aeff45145a2c8fe9e56a46b4, type: 3}
+  - {fileID: 146298357760345939, guid: 04f29ae80557f7e45879267f1e34e390, type: 3}
+  players:
+  - {fileID: 2474334132105171527, guid: 5f54d88ebd4110547aadde791d5ee7c5, type: 3}
+  - {fileID: 8005137130997128361, guid: 341ba7361779d644b85bb80b04ae9fed, type: 3}
+  _victoryCanvas: {fileID: 6785399125299487332}
+  player2Offset: 7
   victoryMessageDuration: 3
 --- !u!114 &75258077990551557
 MonoBehaviour:
@@ -310,7 +318,7 @@ MonoBehaviour:
   m_JoinAction:
     m_UseReference: 0
     m_Action:
-      m_Name: 
+      m_Name: Join
       m_Type: 0
       m_ExpectedControlType: 
       m_Id: 8c08f9b6-d483-49d9-9474-72364301e697

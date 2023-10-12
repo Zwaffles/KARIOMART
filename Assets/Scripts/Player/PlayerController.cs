@@ -1,8 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
@@ -24,6 +20,8 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody _rb;
 
+    private GameManager _gameManager;
+
     [SerializeField] private float steerSpeed = 10f;
     [SerializeField] private float accelerationForce = 10f;
     [SerializeField] private float brakeForce = 10f;
@@ -33,16 +31,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float maxAngularVelocity = 10f;
     [SerializeField] private float bounceFactor = 0.5f;
 
-    private void Awake()
+    private void OnEnable()
     {
         _rb = GetComponent<Rigidbody>();
+        _gameManager = GameManager.Instance;
 
-        GameManager.Instance.OnLoadNextCourse += ResetPlayer;
+        _gameManager.OnLoadNextCourse += ResetPlayer;
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
-        GameManager.Instance.OnLoadNextCourse -= ResetPlayer;
+        _gameManager.OnLoadNextCourse -= ResetPlayer;
     }
 
     private void Update()
@@ -98,7 +97,7 @@ public class PlayerController : MonoBehaviour
 
     private void Idle()
     {
-        Vector3 decelerationForce = -_rb.velocity.normalized * decelerationRate;
+        Vector3 decelerationForce = -_rb.velocity.normalized * decelerationRate * Time.deltaTime * 100;
         _rb.AddForce(decelerationForce, ForceMode.Acceleration);
     }
 
@@ -106,7 +105,7 @@ public class PlayerController : MonoBehaviour
     {
         if (_rb.velocity.magnitude < maxSpeed)
         {
-            _rb.AddForce(transform.forward * accelerationForce, ForceMode.Acceleration);
+            _rb.AddForce(transform.forward * accelerationForce * Time.deltaTime * 100, ForceMode.Acceleration);
         }
     }
 
@@ -114,11 +113,11 @@ public class PlayerController : MonoBehaviour
     {
         if (_forwardVelocity > 0)
         {
-            _rb.AddForce(-_rb.velocity.normalized * brakeForce, ForceMode.Acceleration);
+            _rb.AddForce(-_rb.velocity.normalized * brakeForce * Time.deltaTime * 100, ForceMode.Acceleration);
         }
         else
         {
-            _rb.AddForce(-transform.forward * reverseForce, ForceMode.Acceleration);
+            _rb.AddForce(-transform.forward * reverseForce * Time.deltaTime * 100, ForceMode.Acceleration);
         }
     }
 
@@ -135,13 +134,13 @@ public class PlayerController : MonoBehaviour
 
         if (Mathf.Abs(newAngularVelocity) <= maxAngularVelocity)
         {
-            _rb.AddTorque(Vector3.up * torque, ForceMode.Acceleration);
+            _rb.AddTorque(Vector3.up * torque * Time.deltaTime * 100, ForceMode.Acceleration);
         }
         else
         {
             if (Mathf.Sign(torque) != Mathf.Sign(currentAngularVelocity))
             {
-                _rb.AddTorque(Vector3.up * torque, ForceMode.Acceleration);
+                _rb.AddTorque(Vector3.up * torque * Time.deltaTime * 100, ForceMode.Acceleration);
             }
         }
     }
@@ -153,15 +152,15 @@ public class PlayerController : MonoBehaviour
         _rb.velocity = Vector3.Reflect(_rb.velocity, bounceDirection) * bounceFactor;
     }
 
-    private void ResetPlayer(Transform spawnPoint)
+    private void ResetPlayer(Course course)
     {
         _rb.velocity = Vector3.zero;
         _steer = 0.0f;
         _acceleratePressed = false;
         _reversePressed = false;
 
-        transform.position = spawnPoint.position;
-        transform.rotation = spawnPoint.rotation;
+        transform.position = course.SpawnPoint.position + (GetComponent<PlayerInput>().playerIndex > 0 ? new Vector3(_gameManager.Player2Offset, 0, 0) : Vector3.zero);
+        transform.rotation = course.SpawnPoint.rotation;
     }
 
     public void OnAccelerate(InputAction.CallbackContext ctx)
