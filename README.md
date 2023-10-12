@@ -6,6 +6,8 @@ This KarioMart project of mine was a bit of a dumpster fire at times since this 
 
 The Game utilizes Tank controls (WASD/Arrow Keys - Forward, Steering, Reversing).
 
+DISCLAIMER: I'm no Game Designer, I tried playing around with all the values on the players and came quite close to something nice but then I HAD to go fiddle around with the values and mess everything up without writing down the good ones ughhh
+
 ## Getting Started
 The game should work out of the box, boot it up in Unity 2022.3.10f1, hop onto the MainMenu Scene and start from there!
 
