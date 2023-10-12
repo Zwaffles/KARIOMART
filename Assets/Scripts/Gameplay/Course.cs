@@ -13,7 +13,7 @@ public class Course : MonoBehaviour
 
     public Transform SpawnPoint;
 
-    private void Start()
+    private void OnEnable()
     {
         _gameManager = GameManager.Instance;
 
@@ -24,6 +24,14 @@ public class Course : MonoBehaviour
         foreach (var checkpoint in checkpoints)
         {
             checkpoint.OnCheckpointReached += HandleCheckpointReached;
+        }
+    }
+
+    private void OnDisable()
+    {
+        foreach (var checkpoint in checkpoints)
+        {
+            checkpoint.OnCheckpointReached -= HandleCheckpointReached;
         }
     }
 

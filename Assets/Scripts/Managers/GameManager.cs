@@ -126,10 +126,10 @@ public class GameManager : MonoBehaviour
 
     public void InitializeSolo()
     {
-        StartCoroutine(_InitializeSolo());
+        StartCoroutine(InitializeSoloCoroutine());
     }
 
-    private IEnumerator _InitializeSolo()
+    private IEnumerator InitializeSoloCoroutine()
     {
         SceneManager.LoadScene(1, LoadSceneMode.Single);
         while (SceneManager.GetActiveScene().buildIndex != 1)
@@ -151,10 +151,10 @@ public class GameManager : MonoBehaviour
 
     public void InitializeVersus()
     {
-        StartCoroutine(_InitializeVersus());
+        StartCoroutine(InitializeVersusCoroutine());
     }
 
-    public IEnumerator _InitializeVersus()
+    public IEnumerator InitializeVersusCoroutine()
     {
         SceneManager.LoadScene(1, LoadSceneMode.Single);
         while (SceneManager.GetActiveScene().buildIndex != 1)
