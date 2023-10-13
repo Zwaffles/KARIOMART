@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
 
     private float _steer = 0.0f;
     private float _forwardVelocity = 0.0f;
+    private float _totalVelocity = 0.0f;
 
     private bool _acceleratePressed;
     private bool _reversePressed;
@@ -51,10 +52,8 @@ public class PlayerController : MonoBehaviour
         switch (_currentState)
         {
             case PlayerState.Idle:
-                if(_forwardVelocity > 0)
-                    Idle();
-                else
-                    Debug.Log("Car is idling");
+                Debug.Log("Car is idle");
+                Idle();
                 break;
             case PlayerState.Accelerating:
                 Debug.Log("Car is accelerating");
@@ -67,8 +66,9 @@ public class PlayerController : MonoBehaviour
         }
 
         _rb.velocity = Vector3.ClampMagnitude(_rb.velocity, maxSpeed);
+        _totalVelocity = _rb.velocity.magnitude;
 
-        if (_rb.velocity.magnitude < 0.1f)
+        if (_totalVelocity < 0.1f)
             _rb.velocity = Vector3.zero;
 
         if (_steer != 0)
@@ -97,6 +97,9 @@ public class PlayerController : MonoBehaviour
 
     private void Idle()
     {
+        if (_forwardVelocity <= 0)
+            return;
+
         Vector3 decelerationForce = -_rb.velocity.normalized * decelerationRate * Time.deltaTime * 100;
         _rb.AddForce(decelerationForce, ForceMode.Acceleration);
     }
@@ -123,25 +126,18 @@ public class PlayerController : MonoBehaviour
 
     private void Steer()
     {
-        if (_currentState == PlayerState.Idle)
+        if (_totalVelocity < 0.1f)
             return;
 
-        float torque = (_currentState == PlayerState.Reversing ? -_steer : _steer) * steerSpeed;
+        float torque = _steer * steerSpeed;
 
         float currentAngularVelocity = _rb.angularVelocity.y;
 
-        float newAngularVelocity = currentAngularVelocity + torque;
+        float newAngularVelocity = _rb.angularVelocity.y + torque;
 
-        if (Mathf.Abs(newAngularVelocity) <= maxAngularVelocity)
+        if (Mathf.Abs(newAngularVelocity) <= maxAngularVelocity || Mathf.Sign(torque) != Mathf.Sign(currentAngularVelocity))
         {
             _rb.AddTorque(Vector3.up * torque * Time.deltaTime * 100, ForceMode.Acceleration);
-        }
-        else
-        {
-            if (Mathf.Sign(torque) != Mathf.Sign(currentAngularVelocity))
-            {
-                _rb.AddTorque(Vector3.up * torque * Time.deltaTime * 100, ForceMode.Acceleration);
-            }
         }
     }
 

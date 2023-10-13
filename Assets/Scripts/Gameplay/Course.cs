@@ -48,7 +48,7 @@ public class Course : MonoBehaviour
             if (_playerProgress[playerNumber] == _totalCheckpoints)
             {
                 Debug.Log(playerNumber + " won! calling " +_gameManager.name);
-                _gameManager.PlayerWon(playerNumber);
+                _gameManager.HandlePlayerWinning(playerNumber);
             }
         }
     }

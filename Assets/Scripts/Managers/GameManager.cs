@@ -77,7 +77,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void PlayerWon(int playerNumber)
+    public void HandlePlayerWinning(int playerNumber)
     {
         _playerProgress.Clear();
 
@@ -90,8 +90,9 @@ public class GameManager : MonoBehaviour
         {
             _victoryCanvas.GetComponentInChildren<TextMeshProUGUI>().text = $"Player {playerNumber + 1} Victory!";
             _victoryCanvas.enabled = true;
-            StartCoroutine(HideVictoryMessage());
         }
+
+        StartCoroutine(HideVictoryMessage());
     }
 
     private IEnumerator HideVictoryMessage()
