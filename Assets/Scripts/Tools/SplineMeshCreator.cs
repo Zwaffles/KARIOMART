@@ -16,6 +16,7 @@ public class SplineMeshCreator : MonoBehaviour
     [SerializeField] private PhysicMaterial colliderPhysicMaterial;
 
     [SerializeField] private float width;
+    [SerializeField] private float depth = 2.0f;
     [SerializeField] private float colliderWidth = 1.0f;
     [SerializeField] private float colliderHeight = 1.0f;
 
@@ -108,14 +109,20 @@ public class SplineMeshCreator : MonoBehaviour
             var t5 = offset + 1;
             var t6 = offset + 0;
 
+            // Extrude the vertices downward by the specified depth
+            p1 -= Vector3.up * depth;
+            p2 -= Vector3.up * depth;
+            p3 -= Vector3.up * depth;
+            p4 -= Vector3.up * depth;
+
             verts.AddRange(new List<Vector3> { p1, p2, p3, p4 });
             tris.AddRange(new List<int> { t1, t2, t3, t4, t5, t6 });
-
-            mesh.vertices = verts.ToArray();
-            mesh.triangles = tris.ToArray();
-
-            meshFilter.sharedMesh = mesh;
         }
+
+        mesh.vertices = verts.ToArray();
+        mesh.triangles = tris.ToArray();
+
+        meshFilter.sharedMesh = mesh;
     }
 
     public void GenerateEdgeColliders()
@@ -126,91 +133,91 @@ public class SplineMeshCreator : MonoBehaviour
             return;
         }
 
-        for (int i = collidersContainer.childCount; i > 0; --i)
+        for (var i = collidersContainer.childCount; i > 0; --i)
             DestroyImmediate(collidersContainer.GetChild(0).gameObject);
 
-        for (int i = 0; i < _vertsP1.Count - 1; i++)
+        for (var i = 0; i < _vertsP1.Count - 1; i++)
         {
-            Vector3 p1 = _vertsP1[i];
-            Vector3 p2 = _vertsP1[i + 1];
+            var p1 = _vertsP1[i];
+            var p2 = _vertsP1[i + 1];
 
-            Vector3 colliderPosition = (p1 + p2) / 2f;
+            var colliderPosition = (p1 + p2) / 2f;
 
-            GameObject colliderParent = new GameObject("Collider_Inner_" + i);
+            var colliderParent = new GameObject("Collider_Inner_" + i);
             colliderParent.transform.SetParent(collidersContainer);
             colliderParent.transform.position = colliderPosition;
 
-            Quaternion rotation = Quaternion.LookRotation(p2 - p1, Vector3.up);
+            var rotation = Quaternion.LookRotation(p2 - p1, Vector3.up);
 
             colliderParent.transform.rotation = rotation;
 
-            BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
-            collider.sharedMaterial = colliderPhysicMaterial;
-            collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
-            collider.center = new Vector3(-colliderWidth / 2f, 0, 0);
+            var boxCollider = colliderParent.AddComponent<BoxCollider>();
+            boxCollider.sharedMaterial = colliderPhysicMaterial;
+            boxCollider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
+            boxCollider.center = new Vector3(-colliderWidth / 2f, 0, 0);
         }
 
         if (_vertsP1.Count > 1)
         {
-            Vector3 lastP1 = _vertsP1[_vertsP1.Count - 1];
-            Vector3 firstP1 = _vertsP1[0];
+            var lastP1 = _vertsP1[^1];
+            var firstP1 = _vertsP1[0];
 
-            Vector3 colliderPosition = (lastP1 + firstP1) / 2f;
+            var colliderPosition = (lastP1 + firstP1) / 2f;
 
-            GameObject colliderParent = new GameObject("Collider_Inner_Last");
+            var colliderParent = new GameObject("Collider_Inner_Last");
             colliderParent.transform.SetParent(collidersContainer);
             colliderParent.transform.position = colliderPosition;
 
-            Quaternion rotation = Quaternion.LookRotation(firstP1 - lastP1, Vector3.up);
+            var rotation = Quaternion.LookRotation(firstP1 - lastP1, Vector3.up);
 
             colliderParent.transform.rotation = rotation;
 
-            BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
-            collider.sharedMaterial = colliderPhysicMaterial;
-            collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP1, firstP1));
-            collider.center = new Vector3(-colliderWidth / 2f, 0, 0);
+            var boxCollider = colliderParent.AddComponent<BoxCollider>();
+            boxCollider.sharedMaterial = colliderPhysicMaterial;
+            boxCollider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP1, firstP1));
+            boxCollider.center = new Vector3(-colliderWidth / 2f, 0, 0);
         }
 
-        for (int i = 0; i < _vertsP2.Count - 1; i++)
+        for (var i = 0; i < _vertsP2.Count - 1; i++)
         {
-            Vector3 p1 = _vertsP2[i];
-            Vector3 p2 = _vertsP2[i + 1];
+            var p1 = _vertsP2[i];
+            var p2 = _vertsP2[i + 1];
 
-            Vector3 colliderPosition = (p1 + p2) / 2f;
+            var colliderPosition = (p1 + p2) / 2f;
 
-            GameObject colliderParent = new GameObject("Collider_Outer_" + i);
+            var colliderParent = new GameObject("Collider_Outer_" + i);
             colliderParent.transform.SetParent(collidersContainer);
             colliderParent.transform.position = colliderPosition;
 
-            Quaternion rotation = Quaternion.LookRotation(p2 - p1, Vector3.up);
+            var rotation = Quaternion.LookRotation(p2 - p1, Vector3.up);
 
             colliderParent.transform.rotation = rotation;
 
-            BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
-            collider.sharedMaterial = colliderPhysicMaterial;
-            collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
-            collider.center = new Vector3(colliderWidth / 2f, 0, 0);
+            var boxCollider = colliderParent.AddComponent<BoxCollider>();
+            boxCollider.sharedMaterial = colliderPhysicMaterial;
+            boxCollider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
+            boxCollider.center = new Vector3(colliderWidth / 2f, 0, 0);
         }
 
-        if (_vertsP2.Count > 1)
+        if (_vertsP2.Count <= 1) return;
         {
-            Vector3 lastP2 = _vertsP2[_vertsP2.Count - 1];
-            Vector3 firstP2 = _vertsP2[0];
+            var lastP2 = _vertsP2[^1];
+            var firstP2 = _vertsP2[0];
 
-            Vector3 colliderPosition = (lastP2 + firstP2) / 2f;
+            var colliderPosition = (lastP2 + firstP2) / 2f;
 
-            GameObject colliderParent = new GameObject("Collider_Inner_Last");
+            var colliderParent = new GameObject("Collider_Inner_Last");
             colliderParent.transform.SetParent(collidersContainer);
             colliderParent.transform.position = colliderPosition;
 
-            Quaternion rotation = Quaternion.LookRotation(firstP2 - lastP2, Vector3.up);
+            var rotation = Quaternion.LookRotation(firstP2 - lastP2, Vector3.up);
 
             colliderParent.transform.rotation = rotation;
 
-            BoxCollider collider = colliderParent.AddComponent<BoxCollider>();
-            collider.sharedMaterial = colliderPhysicMaterial;
-            collider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP2, firstP2));
-            collider.center = new Vector3(colliderWidth / 2f, 0, 0);
+            var boxCollider = colliderParent.AddComponent<BoxCollider>();
+            boxCollider.sharedMaterial = colliderPhysicMaterial;
+            boxCollider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP2, firstP2));
+            boxCollider.center = new Vector3(colliderWidth / 2f, 0, 0);
         }
     }
 #if UNITY_EDITOR

@@ -51,11 +51,11 @@ namespace Editor
         {
             base.OnInspectorGUI();
 
-            if (GUILayout.Button("Generate Edge Colliders"))
-            {
-                SplineMeshCreator splineMeshCreator = (SplineMeshCreator)target;
-                splineMeshCreator.GenerateEdgeColliders();
-            }
+            if (!GUILayout.Button("Generate Edge Colliders")) 
+                return;
+            
+            var splineMeshCreator = (SplineMeshCreator)target;
+            splineMeshCreator.GenerateEdgeColliders();
         }
     }
 }
