@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 namespace GhostSystem
@@ -12,26 +12,45 @@ namespace GhostSystem
         private int _index2;
 
         private Transform _playerTransform;
-        private List<GhostValues> _ghostValues;
+
+        public event Action OnReplayComplete;
 
         private void Awake()
         {
             _playerTransform = transform;
-            _timeValue = 0;
+            _timeValue = 0f;
         }
 
         private void Update()
         {
-            if (!ghost.isReplaying) 
-                return;
-            
+            switch (ghost.currentState)
+            {
+                case GhostState.Replaying:
+                    UpdateReplaying();
+                    break;
+                case GhostState.Idle:
+                    break;
+                case GhostState.Recording:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void UpdateReplaying()
+        {
             _timeValue += Time.unscaledDeltaTime;
-            
+
             GetIndex();
 
             if (_index1 != _index2)
             {
                 UpdateTransform();
+            }
+            else
+            {
+                ghost.currentState = GhostState.Idle;
+                OnReplayComplete?.Invoke();
             }
         }
 
@@ -39,12 +58,12 @@ namespace GhostSystem
         {
             for (var i = 0; i < ghost.GhostValues.Count - 1; i++)
             {
-                if (ghost.GhostValues[i].TimeStamp <= _timeValue && _timeValue <= ghost.GhostValues[i + 1].TimeStamp)
-                {
-                    _index1 = i;
-                    _index2 = i + 1;
-                    return;
-                }
+                if (!(ghost.GhostValues[i].TimeStamp <= _timeValue) ||
+                    !(_timeValue <= ghost.GhostValues[i + 1].TimeStamp)) continue;
+                
+                _index1 = i;
+                _index2 = i + 1;
+                return;
             }
 
             _index1 = ghost.GhostValues.Count - 1;

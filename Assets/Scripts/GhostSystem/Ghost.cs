@@ -3,6 +3,13 @@ using UnityEngine;
 
 namespace GhostSystem
 {
+    public enum GhostState
+    {
+        Idle,
+        Recording,
+        Replaying
+    }
+    
     public struct GhostValues
     {
         public readonly float TimeStamp;
@@ -22,11 +29,10 @@ namespace GhostSystem
     {
         public readonly List<GhostValues> GhostValues = new List<GhostValues>();
 
-        public bool isRecording;
-        public bool isReplaying;
+        public GhostState currentState = GhostState.Idle;
         public float recordFrequency;
 
-        public void ResetData()
+        private void ResetData()
         {
             GhostValues.Clear();
         }

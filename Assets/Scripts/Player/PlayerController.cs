@@ -52,15 +52,12 @@ public class PlayerController : MonoBehaviour
         switch (_currentState)
         {
             case PlayerState.Idle:
-                Debug.Log("Car is idle");
                 Idle();
                 break;
             case PlayerState.Accelerating:
-                Debug.Log("Car is accelerating");
                 Accelerate();
                 break;
             case PlayerState.Reversing:
-                Debug.Log("Car is reversing");
                 Reverse();
                 break;
         }

@@ -12,6 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c405736b5f5a7e34fa65b4cfba2b5f4c, type: 3}
   m_Name: GhostObject
   m_EditorClassIdentifier: 
-  isRecording: 0
-  isReplaying: 1
+  currentState: 0
   recordFrequency: 240
