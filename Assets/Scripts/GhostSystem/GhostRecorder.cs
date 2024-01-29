@@ -6,14 +6,15 @@ namespace GhostSystem
     public class GhostRecorder : MonoBehaviour
     {
         [SerializeField] private Ghost ghost;
-        private float _timer;
-        private float _timeValue;
+        private float _timer = 0f;
+        private float _timeValue = 0f;
 
         private Transform _recorderTransform;
 
         private void Awake()
         {
             _recorderTransform = transform;
+            ghost.ResetData();
         }
 
         private void Update()

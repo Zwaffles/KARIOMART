@@ -43,14 +43,15 @@ namespace GhostSystem
 
             GetIndex();
 
-            if (_index1 != _index2)
-            {
-                UpdateTransform();
-            }
-            else
+            // Check if _timeValue exceeds the timestamp of the last recorded ghost value
+            if (_timeValue > ghost.GhostValues[^1].TimeStamp)
             {
                 ghost.currentState = GhostState.Idle;
                 OnReplayComplete?.Invoke();
+            }
+            else if (_index1 != _index2)
+            {
+                UpdateTransform();
             }
         }
 
@@ -58,9 +59,9 @@ namespace GhostSystem
         {
             for (var i = 0; i < ghost.GhostValues.Count - 1; i++)
             {
-                if (!(ghost.GhostValues[i].TimeStamp <= _timeValue) ||
-                    !(_timeValue <= ghost.GhostValues[i + 1].TimeStamp)) continue;
-                
+                if (!(ghost.GhostValues[i].TimeStamp <= _timeValue && _timeValue <= ghost.GhostValues[i + 1].TimeStamp))
+                    continue;
+
                 _index1 = i;
                 _index2 = i + 1;
                 return;
@@ -69,6 +70,7 @@ namespace GhostSystem
             _index1 = ghost.GhostValues.Count - 1;
             _index2 = ghost.GhostValues.Count - 1;
         }
+
 
         private void UpdateTransform()
         {

@@ -32,7 +32,7 @@ namespace GhostSystem
         public GhostState currentState = GhostState.Idle;
         public float recordFrequency;
 
-        private void ResetData()
+        public void ResetData()
         {
             GhostValues.Clear();
         }

@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 namespace GhostSystem
 {
+    // This is an example class to handle the start of recording as well as the subsequent replay
+    // In actual Gameplay, recording will happen as soon as player 1 race starts, and replay when player 2 race starts
     public class GhostDebugController : MonoBehaviour
     {
         [SerializeField] private Ghost ghost;
