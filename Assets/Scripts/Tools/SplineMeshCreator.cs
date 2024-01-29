@@ -3,30 +3,26 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.Splines;
 
 public class SplineMeshCreator : MonoBehaviour
 {
+    [Header("Spline Mesh Settings")]
     [SerializeField] private SplineContainer splineContainer;
-
     [SerializeField] private MeshFilter meshFilter;
-
-    [SerializeField] private Transform collidersContainer;
-
-    [SerializeField] private PhysicMaterial colliderPhysicMaterial;
-
     [SerializeField] private float width;
-    [SerializeField] private float colliderWidth = 1.0f;
-    [SerializeField] private float colliderHeight = 1.0f;
-
     [SerializeField] private int resolution;
-
     [SerializeField] private bool autoUpdate;
+    
+    [Space] [Header("Edge Objects")]
+    [SerializeField] private Transform edgePrefabContainer;
+    [SerializeField] private GameObject edgePrefab; // Add this field for the edge GameObject prefab
+    [FormerlySerializedAs("edgeSpacing")] [SerializeField] private float distanceFromEdge = 1.0f;
 
     public bool AutoUpdate => autoUpdate;
 
     private int _splineIndex;
-    
     private float3 _forward;
     private float3 _position;
     private float3 _upVector;
@@ -115,102 +111,69 @@ public class SplineMeshCreator : MonoBehaviour
 
         meshFilter.sharedMesh = mesh;
     }
-
-    public void GenerateEdgeColliders()
+    
+    public void SpawnEdgePrefabs()
     {
-        if (collidersContainer == null)
+        // Ensure that the edge prefab and edge prefab container are set
+        if (edgePrefab == null || edgePrefabContainer == null)
         {
-            Debug.LogError("RoadColliders GameObject not found. Make sure it's assigned in the Inspector.");
+            Debug.LogError("Edge prefab or container is not set.");
             return;
         }
 
-        for (var i = collidersContainer.childCount; i > 0; --i)
-            DestroyImmediate(collidersContainer.GetChild(0).gameObject);
+        // Clear existing edge prefabs
+        for (var i = edgePrefabContainer.childCount; i > 0; --i)
+            DestroyImmediate(edgePrefabContainer.GetChild(0).gameObject);
 
-        for (var i = 0; i < _verticesP1.Count - 1; i++)
+        // Calculate edge prefab positions along the spline for inner and outer edges
+        var innerEdgePositions = new List<Vector3>();
+        var outerEdgePositions = new List<Vector3>();
+        for (var i = 0; i < _verticesP1.Count; i++)
         {
-            var p1 = _verticesP1[i];
-            var p2 = _verticesP1[i + 1];
+            // Calculate position along the spline
+            var time = (1f / resolution) * i;
+            CalculateSplineWidth(time, out var p1, out var p2);
 
-            var colliderPosition = (p1 + p2) / 2f;
+            // Calculate direction along the spline at each point
+            var direction1 = p1 - (Vector3)splineContainer.EvaluatePosition(time - 0.01f);
+            var direction2 = p2 - (Vector3)splineContainer.EvaluatePosition(time - 0.01f);
 
-            var colliderParent = new GameObject("Collider_Inner_" + i);
-            colliderParent.transform.SetParent(collidersContainer);
-            colliderParent.transform.position = colliderPosition;
+            // Calculate object size (assuming edgePrefab has a renderer)
+            var objectSize = edgePrefab.GetComponent<Renderer>().bounds.size.x;
 
-            var rotation = Quaternion.LookRotation(p2 - p1, Vector3.up);
+            // Calculate positions with respect to object size for inner and outer edges
+            var edgePosition1 = p1 - direction1.normalized * (objectSize * 0.5f);
+            var edgePosition2 = p2 - direction2.normalized * (objectSize * 0.5f);
 
-            colliderParent.transform.rotation = rotation;
+            // Adjust Y position to ground level
+            edgePosition1.y += edgePrefab.GetComponent<Renderer>().bounds.extents.y;
+            edgePosition2.y += edgePrefab.GetComponent<Renderer>().bounds.extents.y;
 
-            var boxCollider = colliderParent.AddComponent<BoxCollider>();
-            boxCollider.sharedMaterial = colliderPhysicMaterial;
-            boxCollider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
-            boxCollider.center = new Vector3(-colliderWidth / 2f, 0, 0);
+            // Add positions to inner and outer edge arrays
+            innerEdgePositions.Add(edgePosition1);
+            outerEdgePositions.Add(edgePosition2);
+
+            // Calculate rotation based on the direction to the next point
+            var nextIndex = (i + 1) % _verticesP1.Count;
+            var nextDirection1 = _verticesP1[nextIndex] - p1;
+            var nextDirection2 = _verticesP2[nextIndex] - p2;
+
+            var rotation1 = Quaternion.LookRotation(nextDirection1, _upVector);
+            var rotation2 = Quaternion.LookRotation(nextDirection2, _upVector);
+
+            // Apply edge spacing (adjust as needed)
+            edgePosition1 += direction1.normalized * distanceFromEdge;
+            edgePosition2 += direction2.normalized * distanceFromEdge;
+
+            // Instantiate edge prefabs with rotation for inner and outer edges
+            var edgePrefab1 = Instantiate(edgePrefab, edgePosition1, rotation1, edgePrefabContainer);
+            var edgePrefab2 = Instantiate(edgePrefab, edgePosition2, rotation2, edgePrefabContainer);
         }
 
-        if (_verticesP1.Count > 1)
-        {
-            var lastP1 = _verticesP1[^1];
-            var firstP1 = _verticesP1[0];
-
-            var colliderPosition = (lastP1 + firstP1) / 2f;
-
-            var colliderParent = new GameObject("Collider_Inner_Last");
-            colliderParent.transform.SetParent(collidersContainer);
-            colliderParent.transform.position = colliderPosition;
-
-            var rotation = Quaternion.LookRotation(firstP1 - lastP1, Vector3.up);
-
-            colliderParent.transform.rotation = rotation;
-
-            var boxCollider = colliderParent.AddComponent<BoxCollider>();
-            boxCollider.sharedMaterial = colliderPhysicMaterial;
-            boxCollider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP1, firstP1));
-            boxCollider.center = new Vector3(-colliderWidth / 2f, 0, 0);
-        }
-
-        for (var i = 0; i < _verticesP2.Count - 1; i++)
-        {
-            var p1 = _verticesP2[i];
-            var p2 = _verticesP2[i + 1];
-
-            var colliderPosition = (p1 + p2) / 2f;
-
-            var colliderParent = new GameObject("Collider_Outer_" + i);
-            colliderParent.transform.SetParent(collidersContainer);
-            colliderParent.transform.position = colliderPosition;
-
-            var rotation = Quaternion.LookRotation(p2 - p1, Vector3.up);
-
-            colliderParent.transform.rotation = rotation;
-
-            var boxCollider = colliderParent.AddComponent<BoxCollider>();
-            boxCollider.sharedMaterial = colliderPhysicMaterial;
-            boxCollider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(p1, p2));
-            boxCollider.center = new Vector3(colliderWidth / 2f, 0, 0);
-        }
-
-        if (_verticesP2.Count <= 1) return;
-        {
-            var lastP2 = _verticesP2[^1];
-            var firstP2 = _verticesP2[0];
-
-            var colliderPosition = (lastP2 + firstP2) / 2f;
-
-            var colliderParent = new GameObject("Collider_Inner_Last");
-            colliderParent.transform.SetParent(collidersContainer);
-            colliderParent.transform.position = colliderPosition;
-
-            var rotation = Quaternion.LookRotation(firstP2 - lastP2, Vector3.up);
-
-            colliderParent.transform.rotation = rotation;
-
-            var boxCollider = colliderParent.AddComponent<BoxCollider>();
-            boxCollider.sharedMaterial = colliderPhysicMaterial;
-            boxCollider.size = new Vector3(colliderWidth, colliderHeight, Vector3.Distance(lastP2, firstP2));
-            boxCollider.center = new Vector3(colliderWidth / 2f, 0, 0);
-        }
+        // Use innerEdgePositions and outerEdgePositions as needed
+        // ...
     }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {

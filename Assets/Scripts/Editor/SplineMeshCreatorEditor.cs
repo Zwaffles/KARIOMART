@@ -50,12 +50,12 @@ namespace Editor
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-
-            if (!GUILayout.Button("Generate Edge Colliders")) 
+            
+            if (!GUILayout.Button("Spawn Edge Objects")) 
                 return;
             
             var splineMeshCreator = (SplineMeshCreator)target;
-            splineMeshCreator.GenerateEdgeColliders();
+            splineMeshCreator.SpawnEdgePrefabs();
         }
     }
 }

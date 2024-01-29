@@ -23,7 +23,7 @@ public class Course : MonoBehaviour
 
         foreach (var checkpoint in checkpoints)
         {
-            checkpoint.OnCheckpointReached += HandleCheckpointReached;
+           checkpoint.OnCheckpointReached += HandleCheckpointReached;
         }
     }
 
