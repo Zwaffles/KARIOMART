@@ -16,7 +16,6 @@ public class SplineMeshCreator : MonoBehaviour
     [SerializeField] private PhysicMaterial colliderPhysicMaterial;
 
     [SerializeField] private float width;
-    [SerializeField] private float depth = 2.0f;
     [SerializeField] private float colliderWidth = 1.0f;
     [SerializeField] private float colliderHeight = 1.0f;
 
@@ -32,8 +31,8 @@ public class SplineMeshCreator : MonoBehaviour
     private float3 _position;
     private float3 _upVector;
 
-    private List<Vector3> _vertsP1;
-    private List<Vector3> _vertsP2;
+    private List<Vector3> _verticesP1;
+    private List<Vector3> _verticesP2;
 
     /// <summary>
     /// Invoked once the component is loaded or a value has been changed in the inspector
@@ -54,52 +53,50 @@ public class SplineMeshCreator : MonoBehaviour
         p2 = _position + -right * width;
     }
 
-    private void GetVerts()
+    private void GetVertices()
     {
-        _vertsP1 = new List<Vector3>();
-        _vertsP2 = new List<Vector3>();
+        _verticesP1 = new List<Vector3>();
+        _verticesP2 = new List<Vector3>();
 
         var step = 1f / resolution;
         for (var i = 0; i < resolution; i++)
         {
             var time = step * i;
             CalculateSplineWidth(time, out var p1, out var p2);
-            _vertsP1.Add(p1);
-            _vertsP2.Add(p2);
+            _verticesP1.Add(p1);
+            _verticesP2.Add(p2);
         }
     }
 
     public void BuildMesh()
     {
-        GetVerts();
+        GetVertices();
 
         var mesh = new Mesh();
 
-        var verts = new List<Vector3>();
+        var vertices = new List<Vector3>();
         var tris = new List<int>();
 
-        var length = _vertsP2.Count;
+        var length = _verticesP2.Count;
 
-        // Iterates between verts and builds faces
-        for (var i = 1; i <= length; i++)
+        var isClosed = splineContainer.Spline.Closed;
+
+        // Iterates between vertices and builds faces
+        for (var i = 0; i < length - (isClosed ? 0 : 1); i++)
         {
-            var p1 = _vertsP1[i - 1];
-            var p2 = _vertsP2[i - 1];
-            Vector3 p3;
-            Vector3 p4;
+            var p1 = _verticesP1[i];
+            var p2 = _verticesP2[i];
 
-            if (i == length)
+            if (!isClosed && i == length - 1)
             {
-                p3 = _vertsP1[0];
-                p4 = _vertsP2[0];
-            }
-            else
-            {
-                p3 = _vertsP1[i];
-                p4 = _vertsP2[i];
+                // For open splines, skip the last segment
+                break;
             }
 
-            var offset = 4 * (i - 1);
+            var p3 = _verticesP1[(i + 1) % length];
+            var p4 = _verticesP2[(i + 1) % length];
+
+            var offset = 4 * i;
 
             var t1 = offset + 0;
             var t2 = offset + 2;
@@ -109,17 +106,11 @@ public class SplineMeshCreator : MonoBehaviour
             var t5 = offset + 1;
             var t6 = offset + 0;
 
-            // Extrude the vertices downward by the specified depth
-            p1 -= Vector3.up * depth;
-            p2 -= Vector3.up * depth;
-            p3 -= Vector3.up * depth;
-            p4 -= Vector3.up * depth;
-
-            verts.AddRange(new List<Vector3> { p1, p2, p3, p4 });
+            vertices.AddRange(new List<Vector3> { p1, p2, p3, p4 });
             tris.AddRange(new List<int> { t1, t2, t3, t4, t5, t6 });
         }
 
-        mesh.vertices = verts.ToArray();
+        mesh.vertices = vertices.ToArray();
         mesh.triangles = tris.ToArray();
 
         meshFilter.sharedMesh = mesh;
@@ -136,10 +127,10 @@ public class SplineMeshCreator : MonoBehaviour
         for (var i = collidersContainer.childCount; i > 0; --i)
             DestroyImmediate(collidersContainer.GetChild(0).gameObject);
 
-        for (var i = 0; i < _vertsP1.Count - 1; i++)
+        for (var i = 0; i < _verticesP1.Count - 1; i++)
         {
-            var p1 = _vertsP1[i];
-            var p2 = _vertsP1[i + 1];
+            var p1 = _verticesP1[i];
+            var p2 = _verticesP1[i + 1];
 
             var colliderPosition = (p1 + p2) / 2f;
 
@@ -157,10 +148,10 @@ public class SplineMeshCreator : MonoBehaviour
             boxCollider.center = new Vector3(-colliderWidth / 2f, 0, 0);
         }
 
-        if (_vertsP1.Count > 1)
+        if (_verticesP1.Count > 1)
         {
-            var lastP1 = _vertsP1[^1];
-            var firstP1 = _vertsP1[0];
+            var lastP1 = _verticesP1[^1];
+            var firstP1 = _verticesP1[0];
 
             var colliderPosition = (lastP1 + firstP1) / 2f;
 
@@ -178,10 +169,10 @@ public class SplineMeshCreator : MonoBehaviour
             boxCollider.center = new Vector3(-colliderWidth / 2f, 0, 0);
         }
 
-        for (var i = 0; i < _vertsP2.Count - 1; i++)
+        for (var i = 0; i < _verticesP2.Count - 1; i++)
         {
-            var p1 = _vertsP2[i];
-            var p2 = _vertsP2[i + 1];
+            var p1 = _verticesP2[i];
+            var p2 = _verticesP2[i + 1];
 
             var colliderPosition = (p1 + p2) / 2f;
 
@@ -199,10 +190,10 @@ public class SplineMeshCreator : MonoBehaviour
             boxCollider.center = new Vector3(colliderWidth / 2f, 0, 0);
         }
 
-        if (_vertsP2.Count <= 1) return;
+        if (_verticesP2.Count <= 1) return;
         {
-            var lastP2 = _vertsP2[^1];
-            var firstP2 = _vertsP2[0];
+            var lastP2 = _verticesP2[^1];
+            var firstP2 = _verticesP2[0];
 
             var colliderPosition = (lastP2 + firstP2) / 2f;
 
