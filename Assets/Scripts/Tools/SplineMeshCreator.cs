@@ -17,8 +17,8 @@ public class SplineMeshCreator : MonoBehaviour
     
     [Space] [Header("Edge Objects")]
     [SerializeField] private Transform edgePrefabContainer;
-    [SerializeField] private GameObject edgePrefab; // Add this field for the edge GameObject prefab
-    [FormerlySerializedAs("edgeSpacing")] [SerializeField] private float distanceFromEdge = 1.0f;
+    [SerializeField] private GameObject edgePrefab;
+    [SerializeField] private float distanceFromEdge = 1.0f;
 
     public bool AutoUpdate => autoUpdate;
 
@@ -76,8 +76,7 @@ public class SplineMeshCreator : MonoBehaviour
         var length = _verticesP2.Count;
 
         var isClosed = splineContainer.Spline.Closed;
-
-        // Iterates between vertices and builds faces
+        
         for (var i = 0; i < length - (isClosed ? 0 : 1); i++)
         {
             var p1 = _verticesP1[i];
@@ -85,7 +84,6 @@ public class SplineMeshCreator : MonoBehaviour
 
             if (!isClosed && i == length - 1)
             {
-                // For open splines, skip the last segment
                 break;
             }
 
@@ -114,64 +112,51 @@ public class SplineMeshCreator : MonoBehaviour
     
     public void SpawnEdgePrefabs()
     {
-        // Ensure that the edge prefab and edge prefab container are set
         if (edgePrefab == null || edgePrefabContainer == null)
         {
             Debug.LogError("Edge prefab or container is not set.");
             return;
         }
-
-        // Clear existing edge prefabs
+        
         for (var i = edgePrefabContainer.childCount; i > 0; --i)
             DestroyImmediate(edgePrefabContainer.GetChild(0).gameObject);
-
-        // Calculate edge prefab positions along the spline for inner and outer edges
+        
         var innerEdgePositions = new List<Vector3>();
         var outerEdgePositions = new List<Vector3>();
         for (var i = 0; i < _verticesP1.Count; i++)
         {
-            // Calculate position along the spline
             var time = (1f / resolution) * i;
             CalculateSplineWidth(time, out var p1, out var p2);
 
-            // Calculate direction along the spline at each point
             var direction1 = p1 - (Vector3)splineContainer.EvaluatePosition(time - 0.01f);
             var direction2 = p2 - (Vector3)splineContainer.EvaluatePosition(time - 0.01f);
-
-            // Calculate object size (assuming edgePrefab has a renderer)
+            
             var objectSize = edgePrefab.GetComponent<Renderer>().bounds.size.x;
-
-            // Calculate positions with respect to object size for inner and outer edges
+            
             var edgePosition1 = p1 - direction1.normalized * (objectSize * 0.5f);
             var edgePosition2 = p2 - direction2.normalized * (objectSize * 0.5f);
-
-            // Adjust Y position to ground level
+            
             edgePosition1.y += edgePrefab.GetComponent<Renderer>().bounds.extents.y;
             edgePosition2.y += edgePrefab.GetComponent<Renderer>().bounds.extents.y;
-
-            // Add positions to inner and outer edge arrays
+            
             innerEdgePositions.Add(edgePosition1);
             outerEdgePositions.Add(edgePosition2);
-
-            // Calculate rotation based on the direction to the next point
+            
             var nextIndex = (i + 1) % _verticesP1.Count;
             var nextDirection1 = _verticesP1[nextIndex] - p1;
             var nextDirection2 = _verticesP2[nextIndex] - p2;
 
             var rotation1 = Quaternion.LookRotation(nextDirection1, _upVector);
             var rotation2 = Quaternion.LookRotation(nextDirection2, _upVector);
-
-            // Apply edge spacing (adjust as needed)
+            
             edgePosition1 += direction1.normalized * distanceFromEdge;
             edgePosition2 += direction2.normalized * distanceFromEdge;
-
-            // Instantiate edge prefabs with rotation for inner and outer edges
+            
             var edgePrefab1 = Instantiate(edgePrefab, edgePosition1, rotation1, edgePrefabContainer);
             var edgePrefab2 = Instantiate(edgePrefab, edgePosition2, rotation2, edgePrefabContainer);
         }
 
-        // Use innerEdgePositions and outerEdgePositions as needed
-        // ...
+        // TODO: Uhhh more stuff??
     }
 
 #if UNITY_EDITOR
