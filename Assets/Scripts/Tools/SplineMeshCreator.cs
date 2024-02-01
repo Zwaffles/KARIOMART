@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
@@ -11,7 +12,7 @@ public class SplineMeshCreator : MonoBehaviour
     [Header("Spline Mesh Settings")]
     [SerializeField] private SplineContainer splineContainer;
     [SerializeField] private MeshFilter meshFilter;
-    [SerializeField] private float width;
+    [SerializeField] private float defaultWidth;
     [SerializeField] private int resolution;
     [SerializeField] private bool autoUpdate;
     
@@ -19,8 +20,6 @@ public class SplineMeshCreator : MonoBehaviour
     [SerializeField] private Transform edgePrefabContainer;
     [SerializeField] private GameObject edgePrefab;
     [SerializeField] private float distanceFromEdge = 1.0f;
-
-    public bool AutoUpdate => autoUpdate;
 
     private int _splineIndex;
     private float3 _forward;
@@ -34,19 +33,51 @@ public class SplineMeshCreator : MonoBehaviour
     /// Invoked once the component is loaded or a value has been changed in the inspector
     /// </summary>
     public event Action OnValueChanged;
+    
+    public bool AutoUpdate => autoUpdate;
+    public Spline Spline => splineContainer.Spline;
+    public List<float> Widths { get; private set; }
 
     private void Start()
     {
-        BuildMesh();
+        autoUpdate = false;
+        //BuildMesh();
     }
 
+    private void UpdateWidthsList()
+    {
+        var knotCount = splineContainer.Spline.Knots.Count();
+
+        if (Widths != null && Widths.Count == knotCount)
+            return;
+        
+        Widths = new List<float>(new float[knotCount]); // Initialize with default values
+        for (var i = 0; i < Widths.Count(); i++)
+        {
+            Widths[i] = defaultWidth;
+        }
+    }
+    
     private void CalculateSplineWidth(float time, out Vector3 p1, out Vector3 p2)
     {
         splineContainer.Evaluate(_splineIndex, time, out _position, out _forward, out _upVector);
 
         float3 right = Vector3.Cross(_forward, _upVector).normalized;
-        p1 = _position + right * width;
-        p2 = _position + -right * width;
+
+        // Update the Widths list
+        UpdateWidthsList();
+
+        // Calculate the knot index based on the total number of knots
+        var normalizedTime = time * (Widths.Count - 1);
+        var knotIndex = Mathf.FloorToInt(normalizedTime);
+        var t = normalizedTime - knotIndex;
+
+        knotIndex = Mathf.Clamp(knotIndex, 0, Widths.Count - 2); // Ensure that there is a next knot
+
+        var currentWidth = Mathf.Lerp(Widths[knotIndex], Widths[knotIndex + 1], t);
+
+        p1 = _position + right * currentWidth;
+        p2 = _position + -right * currentWidth;
     }
 
     private void GetVertices()
